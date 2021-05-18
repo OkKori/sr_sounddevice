@@ -77,20 +77,20 @@ class Microphone(AudioSource):
 
         # set up PyAudio
         self.sounddevice_module = self.get_sounddevice()
-        audio = self.sounddevce_module.PyAudio()
+        audio = self.sounddevce_module.query_devices()
         try:
-            count = audio.get_device_count()  # obtain device count
+            count = len(audio)  # obtain device count
             if device_index is not None:  # ensure device index is in range
                 assert 0 <= device_index < count, "Device index out of range ({} devices available; device index should be between 0 and {} inclusive)".format(count, count - 1)
             if sample_rate is None:  # automatically set the sample rate to the hardware's default sample rate if not specified
-                device_info = audio.get_device_info_by_index(device_index) if device_index is not None else audio.get_default_input_device_info()
-                assert isinstance(device_info.get("defaultSampleRate"), (float, int)) and device_info["defaultSampleRate"] > 0, "Invalid device info returned from PyAudio: {}".format(device_info)
-                sample_rate = int(device_info["defaultSampleRate"])
+                device_info = audio[device_index] if device_index is not None else self.sounddevce_module.query_devices(device = "default")
+                assert isinstance(device_info["default_samplerate"], (float, int)) and device_info["default_samplerate"] > 0, "Invalid device info returned from sounddevice: {}".format(device_info)
+                sample_rate = int(device_info["default_samplerate"])
         finally:
             audio.terminate()
-
+        import _portaudio as pa
         self.device_index = device_index
-        self.format = self.pyaudio_module.paInt16  # 16-bit int sampling
+        self.format = pa.paInt16  # 16-bit int sampling
         self.SAMPLE_WIDTH = self.pyaudio_module.get_sample_size(self.format)  # size of each sample
         self.SAMPLE_RATE = sample_rate  # sampling rate in Hertz
         self.CHUNK = chunk_size  # number of frames stored in each buffer
