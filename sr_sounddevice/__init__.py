@@ -77,14 +77,14 @@ class Microphone(AudioSource):
 
         # set up PyAudio
         self.sounddevice_module = self.get_sounddevice()
-        audio = self.sounddevce_module.query_devices()
+        audio = self.sounddevice_module.query_devices()
         count = len(audio)  # obtain device count
         if device_index is not None:  # ensure device index is in range
             assert 0 <= device_index < count, "Device index out of range ({} devices available; device index should be between 0 and {} inclusive)".format(count, count - 1)
         if sample_rate is None:  # automatically set the sample rate to the hardware's default sample rate if not specified
-            device_info = audio[device_index] if device_index is not None else self.sounddevce_module.query_devices(device = "default")
+            device_info = audio[device_index] if device_index is not None else self.sounddevice_module.query_devices(device = "default")
             assert isinstance(device_info["default_samplerate"], (float, int)) and device_info["default_samplerate"] > 0, "Invalid device info returned from sounddevice: {}".format(device_info)
-            sample_rate = int(device_info["default_samplerate"]
+            sample_rate = int(device_info["default_samplerate"])
 
         import _portaudio as pa
         self.device_index = device_index
