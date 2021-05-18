@@ -76,8 +76,8 @@ class Microphone(AudioSource):
         assert isinstance(chunk_size, int) and chunk_size > 0, "Chunk size must be a positive integer"
 
         # set up PyAudio
-        self.pyaudio_module = self.get_pyaudio()
-        audio = self.pyaudio_module.PyAudio()
+        self.sounddevice_module = self.get_sounddevice()
+        audio = self.sounddevce_module.PyAudio()
         try:
             count = audio.get_device_count()  # obtain device count
             if device_index is not None:  # ensure device index is in range
@@ -99,18 +99,23 @@ class Microphone(AudioSource):
         self.stream = None
 
     @staticmethod
-    def get_pyaudio():
+    def get_sounddevice():
         """
         Imports the pyaudio module and checks its version. Throws exceptions if pyaudio can't be found or a wrong version is installed
         """
         try:
-            import pyaudio
+            #import pyaudio
+            import sounddevice
         except ImportError:
+            #raise AttributeError("Could not find PyAudio; check installation")
             raise AttributeError("Could not find PyAudio; check installation")
+        """
         from distutils.version import LooseVersion
         if LooseVersion(pyaudio.__version__) < LooseVersion("0.2.11"):
             raise AttributeError("PyAudio 0.2.11 or later is required (found version {})".format(pyaudio.__version__))
-        return pyaudio
+        """
+        #return pyaudio
+        return sounddevice
 
     @staticmethod
     def list_microphone_names():
@@ -119,14 +124,11 @@ class Microphone(AudioSource):
 
         The index of each microphone's name in the returned list is the same as its device index when creating a ``Microphone`` instance - if you want to use the microphone at index 3 in the returned list, use ``Microphone(device_index=3)``.
         """
-        audio = Microphone.get_pyaudio().PyAudio()
-        try:
-            result = []
-            for i in range(audio.get_device_count()):
-                device_info = audio.get_device_info_by_index(i)
-                result.append(device_info.get("name"))
-        finally:
-            audio.terminate()
+        audio = Microphone.get_sounddevice().query_devices()
+        result = []
+        for i in audio:
+            result.append(i["name"])
+
         return result
 
     @staticmethod
